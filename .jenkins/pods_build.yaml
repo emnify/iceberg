@@ -1,0 +1,9 @@
+metadata:
+spec:
+  serviceAccountName: jenkins-terraform
+  containers:
+    - name: build
+      image: adoptopenjdk/openjdk11:alpine-jre
+      command:
+        - cat
+      tty: true

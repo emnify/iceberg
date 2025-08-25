@@ -1,6 +1,17 @@
 #!/usr/bin/groovy
 
+@Library('jenkins-shared-library') _
+
 pipeline {
+  options {
+     timeout(time: 15, unit: 'MINUTES')
+  }
+  agent {
+      kubernetes {
+          defaultContainer 'build'
+          yamlFile '.jenkins/pods_build.yaml'
+      }
+  }
   stages {
     stage('init') {
       steps {
@@ -29,4 +40,6 @@ pipeline {
     }
   }
 }
+
+
 
