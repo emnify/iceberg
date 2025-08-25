@@ -1,0 +1,32 @@
+#!/usr/bin/groovy
+
+pipeline {
+  stages {
+    stage('init') {
+      steps {
+        withFolderProperties {
+          container('aws') {
+            withAWS(role: env.AWS_CODEARTIFACT_ASSUME_ROLE, useNode: true) {
+              script {
+                env.CODEARTIFACT_AUTH_TOKEN = sh(script:"aws codeartifact get-authorization-token --domain emnify --domain-owner ${env.AWS_CODEARTIFACT_OWNER} --query authorizationToken --output text", returnStdout: true)
+                env.CODEARTIFACT_URL "https://emnify-${env.AWS_CODEARTIFACT_OWNER}.d.codeartifact.eu-west-1.amazonaws.com/maven/iceberg"
+              }
+            }
+          }
+        }
+      }
+    }
+    stage('Build and test') {
+      steps {
+        sh './gradlew -x test -x integrationTest clean build'
+      }
+    }
+    stage('Deploy') {
+      when { branch 'emnify' }
+      steps {
+        sh './gradlew publish'
+      }
+    }
+  }
+}
+
