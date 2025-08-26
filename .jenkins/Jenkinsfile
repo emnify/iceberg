@@ -1,6 +1,17 @@
 #!/usr/bin/groovy
 
+@Library('jenkins-shared-library') _
+
 pipeline {
+  options {
+     timeout(time: 15, unit: 'MINUTES')
+  }
+  agent {
+      kubernetes {
+          defaultContainer 'build'
+          yamlFile '.jenkins/pods_build.yaml'
+      }
+  }
   stages {
     stage('init') {
       steps {
@@ -9,7 +20,7 @@ pipeline {
             withAWS(role: env.AWS_CODEARTIFACT_ASSUME_ROLE, useNode: true) {
               script {
                 env.CODEARTIFACT_AUTH_TOKEN = sh(script:"aws codeartifact get-authorization-token --domain emnify --domain-owner ${env.AWS_CODEARTIFACT_OWNER} --query authorizationToken --output text", returnStdout: true)
-                env.CODEARTIFACT_URL "https://emnify-${env.AWS_CODEARTIFACT_OWNER}.d.codeartifact.eu-west-1.amazonaws.com/maven/iceberg"
+                env.CODEARTIFACT_URL = "https://emnify-${env.AWS_CODEARTIFACT_OWNER}.d.codeartifact.eu-west-1.amazonaws.com/maven/iceberg"
               }
             }
           }
@@ -18,6 +29,7 @@ pipeline {
     }
     stage('Build and test') {
       steps {
+        sh 'echo $CODEARTIFACT_URL'
         sh './gradlew -x test -x integrationTest clean build'
       }
     }
@@ -29,4 +41,6 @@ pipeline {
     }
   }
 }
+
+
 

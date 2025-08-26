@@ -1,0 +1,14 @@
+metadata:
+spec:
+  serviceAccountName: jenkins-terraform
+  containers:
+    - name: build
+      image: public.ecr.aws/docker/library/gradle:8.4-jdk11
+      command:
+        - cat
+      tty: true
+    - name: aws
+      image: public.ecr.aws/aws-cli/aws-cli:2.22.4
+      command:
+        - cat
+      tty: true
